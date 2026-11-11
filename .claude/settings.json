@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm build)",
+      "Bash(pnpm vitest run)",
+      "Bash(pnpm vitest run *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Edit(/.claude/handoff.md)"
+    ],
+    "ask": [
+      "Edit(/backend/package.json)",
+      "Edit(/frontend/package.json)",
+      "Edit(/**/pnpm-lock.yaml)",
+      "Edit(/backend/prisma/**)",
+      "Edit(/backend/*.json)",
+      "Edit(/backend/*.ts)",
+      "Edit(/frontend/*.json)",
+      "Edit(/frontend/*.ts)",
+      "Edit(/frontend/*.js)",
+      "Edit(/frontend/*.cjs)",
+      "Edit(/frontend/index.html)",
+      "Edit(/docs/**)",
+      "Edit(/README.md)",
+      "Edit(/CLAUDE.md)",
+      "Edit(/.gitignore)",
+      "Edit(/.claude/commands/**)",
+      "Edit(/.claude/skills/**)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm remove *)",
+      "Bash(pnpm migrate:dev *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git reset *)"
+    ],
+    "deny": [
+      "Read(/**/.env.local)",
+      "Edit(/**/.env)",
+      "Edit(/**/.env.local)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ". \"$HOME/.nvm/nvm.sh\" && cd \"$CLAUDE_PROJECT_DIR/backend\" && nvm use --silent >/dev/null && echo \"export PATH=\\\"$(dirname \"$(nvm which current)\"):\\$PATH\\\"\" >> \"$CLAUDE_ENV_FILE\"",
+            "statusMessage": "Switching Node to .nvmrc version"
+          }
+        ]
+      }
+    ]
+  }
+}

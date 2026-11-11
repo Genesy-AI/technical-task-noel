@@ -12,9 +12,8 @@ import { Split } from 'ts-toolbelt/out/String/Split'
 import { api, ApiOutput } from '..'
 import { ApiModule } from '../utils'
 
-type ActuallyUseMutationOptions = any
 type MutationsApi<T extends ApiModule> = {
-  [K in keyof T]?: T[K] extends ApiModule ? MutationsApi<T[K]> : ActuallyUseMutationOptions
+  [K in keyof T]?: T[K] extends ApiModule ? MutationsApi<T[K]> : unknown
 }
 type ApiMutationsOptions = ReturnType<typeof apiMutationsOptions>
 type ApiMutationsOptionsLeaves<TApi extends ApiModule, TMut extends MutationsApi<TApi>> = {
@@ -36,17 +35,19 @@ const makeOptions = <TData = unknown, TError = DefaultError, TVariables = void, 
 
 export const useApiMutation = <P extends ApiMutationsPaths>(endpointPath: P) => {
   type Options = Path<ApiMutationsOptions, Split<P, '.'>>
-  const useMutationTyped = useMutation<
-    Options extends UseMutationOptions<infer TData, any, any, any> ? TData : unknown,
-    Options extends UseMutationOptions<any, infer TError, any, any> ? TError : DefaultError,
-    Options extends UseMutationOptions<any, any, infer TVariables, any> ? TVariables : unknown,
-    Options extends UseMutationOptions<any, any, any, infer TContext> ? TContext : unknown
-  >
+  type Types =
+    Options extends UseMutationOptions<infer D, infer E, infer V, infer C>
+      ? [D, E, V, C]
+      : [unknown, DefaultError, unknown, unknown]
+  type TData = Types[0]
+  type TError = Types[1]
+  type TVariables = Types[2]
+  type TContext = Types[3]
 
   const queryClient = useQueryClient()
   const allOptions = useMemo(() => apiMutationsOptions(queryClient), [queryClient])
-  const options = get(allOptions, endpointPath) as Options
-  return useMutationTyped(options as any)
+  const options = get(allOptions, endpointPath) as UseMutationOptions<TData, TError, TVariables, TContext>
+  return useMutation<TData, TError, TVariables, TContext>(options)
 }
 
 const apiMutationsOptions = (queryClient: QueryClient) =>
@@ -69,6 +70,7 @@ const apiMutationsOptions = (queryClient: QueryClient) =>
             countryCode: null,
             companyName: null,
             message: null,
+            emailVerified: null,
             ...input,
           }
           const newLeads: ApiOutput<typeof api.leads.getMany> = [...(previousValue ?? []), newLead]

@@ -42,8 +42,8 @@ export function endpoint<Output, Input>(
 }
 
 export type ApiModule = {
-  readonly [key: string]: ((...args: any[]) => Promise<any>) | ApiModule
+  readonly [key: string]: ((...args: never[]) => Promise<unknown>) | ApiModule
 }
 
-export type ApiInput<T extends (...args: any[]) => Promise<any>> = Parameters<T>[0]
-export type ApiOutput<T extends (...args: any[]) => Promise<any>> = Awaited<ReturnType<T>>
+export type ApiInput<T extends (...args: never[]) => Promise<unknown>> = Parameters<T>[0]
+export type ApiOutput<T extends (...args: never[]) => Promise<unknown>> = Awaited<ReturnType<T>>
