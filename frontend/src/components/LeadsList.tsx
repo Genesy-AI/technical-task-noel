@@ -40,11 +40,18 @@ export const LeadsList: FC = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['leads', 'getMany'] })
       setIsEnrichDropdownOpen(false)
-      toast.success(
-        data.verifiedCount === 1
-          ? `Verified ${data.verifiedCount} email`
-          : `Verified ${data.verifiedCount} emails`
-      )
+      const emails = (count: number) => (count === 1 ? `${count} email` : `${count} emails`)
+      if (data.verifiedCount > 0) {
+        toast.success(`${emails(data.verifiedCount)} verified`)
+      }
+      if (data.failedCount > 0) {
+        // Invalid emails have no error entry; errors explain the ones that couldn't be checked.
+        const details = data.errors.map((e) => `${e.leadName || `Lead ${e.leadId}`}: ${e.error}`)
+        toast.error([`${emails(data.failedCount)} failed verification`, ...details].join('\n'), {
+          duration: 8000,
+          style: { whiteSpace: 'pre-line' },
+        })
+      }
     },
     onError: () => {
       toast.error('Failed to verify emails. Please try again.')
@@ -149,13 +156,14 @@ export const LeadsList: FC = () => {
                     </button>
                     <button
                       onClick={() => verifyEmailsMutation.mutate(selectedLeads)}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      disabled={verifyEmailsMutation.isPending}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <div className="flex items-center">
                         <svg className="mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12H8m8 0a8 8 0 11-16 0 8 8 0 0116 0zm-8 0V4" />
                         </svg>
-                        Verify Email
+                        {verifyEmailsMutation.isPending ? 'Verifying…' : 'Verify Email'}
                       </div>
                     </button>
                     <button
